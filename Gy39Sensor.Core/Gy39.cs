@@ -71,11 +71,13 @@ namespace Gy39Sensor.Core
             while(packetBeginIndex >= 0)
             {
                 // Get the index of the first 0x5A for each round
-                packetBeginIndex = Array.IndexOf(buffer, 0x5A, packetBeginIndex);
+                packetBeginIndex = Array.IndexOf(buffer, (byte)0x5A, packetBeginIndex);
+                if (packetBeginIndex < 0) continue;
 
                 // According to the datasheet, a set of data should be at least 8 bytes long.
                 // If the buffer length is shorter than 8 bytes, it must be wrong.
-                if (packetBeginIndex + 7 > buffer.Length) return null;
+                if (packetBeginIndex + 7 > buffer.Length)
+                    continue;
 
                 // DataSetLength = DataHeaderLength + DataLength
                 var dataSetLength = 4 + buffer[packetBeginIndex + 3];
