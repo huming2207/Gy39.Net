@@ -2,6 +2,7 @@
 using Gy39Sensor.Demo.ViewModel;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO.Ports;
 using System.Linq;
 using System.Text;
@@ -15,6 +16,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace Gy39Sensor.Demo.View
 {
@@ -24,7 +26,8 @@ namespace Gy39Sensor.Demo.View
     public partial class MainWindow : Window
     {
         private Gy39 _gy39;
-        private SensorData _sensorData;
+        private readonly SensorData _sensorData;
+        private DispatcherTimer _timer;
 
         public MainWindow()
         {
@@ -35,6 +38,10 @@ namespace Gy39Sensor.Demo.View
             };
 
             DataContext = _sensorData;
+            
+            _timer = new DispatcherTimer();
+            _timer.Interval = TimeSpan.FromSeconds(1);
+            _timer.Tick += OnTimerTick;
 
             // Add all available ports
             foreach(var port in SerialPort.GetPortNames())
@@ -46,17 +53,20 @@ namespace Gy39Sensor.Demo.View
         private void OpenPortButton_Click(object sender, RoutedEventArgs e)
         {
             _gy39 = new Gy39(PortComboBox.SelectedValue.ToString());
-            _gy39.Start();
-
-            _gy39.SensorDataReceived += OnSensorDataReceived;
+            _timer.Start();
         }
 
-        private void OnSensorDataReceived(object sender, Core.Model.SensorDataReceivedEventArgs e)
+        private void OnTimerTick(object sender, EventArgs e)
         {
-            _sensorData.Brightness = e.Brightness.Lux.ToString();
-            _sensorData.Temperature = e.Weather.Temperature.ToString();
-            _sensorData.Humidity = e.Weather.Temperature.ToString();
-            _sensorData.Atmosphere = e.Weather.Atmosphere.ToString();
+            var weather = _gy39.QueryWeather();
+
+            DataContext = new SensorData()
+            {
+                Brightness = _gy39.QueryBrightness().Lux.ToString(CultureInfo.CurrentCulture),
+                Temperature = weather.Temperature.ToString(CultureInfo.CurrentCulture),
+                Humidity = weather.Humidity.ToString(CultureInfo.CurrentUICulture),
+                Atmosphere = weather.Atmosphere.ToString(CultureInfo.CurrentUICulture)
+            };
         }
 
         private void ClosePortButton_Click(object sender, RoutedEventArgs e)
