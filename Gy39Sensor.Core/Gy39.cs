@@ -2,25 +2,29 @@
 using System.Collections.Generic;
 using System.IO.Ports;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Gy39Sensor.Core.Model;
 
 namespace Gy39Sensor.Core
 {
-    public class Gy39
+    public class Gy39 : IDisposable
     {
         private readonly SerialPort _serialPort;
 
-        public event EventHandler<SensorDataReceivedEventArgs> SensorDataReceived;
-
         /// <summary>
         /// Constructor for GY-39 Library. User need to specify a port and a baud rate (either 9600 or 115200)
+        /// Meanwhile, start the serial port, send 0xA5, 0x00, 0xA5 to disable the auto output
+        /// as it's really a headache for handling data.
+        /// It's hard to judge whether the data is valid with the auto mode (maybe polluted with junk data).
         /// </summary>
         /// <param name="port">Serial port of the sensor</param>
         /// <param name="baudRate">Baud rate of the sensor, should be 9600 or 115200</param>
         public Gy39(string port, int baudRate)
         {
             _serialPort = new SerialPort(port, baudRate, Parity.None, 8, StopBits.One);
-            _serialPort.DataReceived += SerialPort_DataReceived;
+            _serialPort.Open();
+            _serialPort.Write(new byte[] { 0xA5, 0x00, 0xA5 }, 0, 3);
         }
 
         /// <summary>
@@ -30,69 +34,44 @@ namespace Gy39Sensor.Core
         public Gy39(string port)
         {
             _serialPort = new SerialPort(port, 9600, Parity.None, 8, StopBits.One);
-            _serialPort.DataReceived += SerialPort_DataReceived;
+            _serialPort.Open();
+            _serialPort.Write(new byte[] { 0xA5, 0x00, 0xA5 }, 0, 3);
         }
 
-        public void Start()
-        {
-            _serialPort.Open();
-        }
 
         public void Stop()
         {
             _serialPort.Close();
         }
 
-        private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
+        public Weather QueryWeather()
         {
-            var eventArgs = new SensorDataReceivedEventArgs();
-            var dataSets = GetDataFromSerial();
-            if(dataSets == null) return;
-
-            foreach (var dataSet in dataSets)
-            {
-                if (dataSet[2] == 0x15) eventArgs.Brightness = SensorDataReader.GetBrightnessFromData(dataSet);
-                if (dataSet[2] == 0x45) eventArgs.Weather = SensorDataReader.GetWeatherFromData(dataSet);
-            }
-            
-            OnDataConverted(eventArgs);
+            var buffer = PerformQuery(new byte[] {0xA5, 0x52, 0xF7}, 15);
+            return SensorDataReader.GetWeatherFromData(buffer);
         }
 
-        private IEnumerable<byte[]> GetDataFromSerial()
+        public Brightness QueryBrightness()
         {
-            // Create a buffer and fill it in with incoming data
-            var buffer = new byte[_serialPort.BytesToRead];
-            _serialPort.Read(buffer, 0, _serialPort.BytesToRead);
-
-            // Truncate the buffer based on the sensor spec, 
-            // where it starts with two 0x5A bytes, followed by a type byte and a length byte.
-            var packetBeginIndex = 0;
-            var truncatedDataSets = new List<byte[]>();
-            while(packetBeginIndex >= 0)
-            {
-                // Get the index of the first 0x5A for each round
-                packetBeginIndex = Array.IndexOf(buffer, (byte)0x5A, packetBeginIndex);
-                if (packetBeginIndex < 0) continue;
-
-                // According to the datasheet, a set of data should be at least 8 bytes long.
-                // If the buffer length is shorter than 8 bytes, it must be wrong.
-                if (packetBeginIndex + 7 > buffer.Length)
-                    continue;
-
-                // DataSetLength = DataHeaderLength + DataLength
-                var dataSetLength = 4 + buffer[packetBeginIndex + 3];
-                var truncatedDataSet = new byte[dataSetLength];
-                Array.Copy(buffer, packetBeginIndex, truncatedDataSet, 0, dataSetLength);
-                truncatedDataSets.Add(truncatedDataSet);
-            }
-
-            return truncatedDataSets;
+            var buffer = PerformQuery(new byte[] {0xA5, 0x51, 0xF6}, 9);
+            return SensorDataReader.GetBrightnessFromData(buffer);
         }
 
-        protected virtual void OnDataConverted(SensorDataReceivedEventArgs eventArgs)
+        public byte[] PerformQuery(byte[] commandData, int length)
         {
-            var handler = SensorDataReceived;
-            handler?.Invoke(this, eventArgs); // Same as "if (handler != null) handler(this, eventArgs);"
+            // Send weather query command   
+            _serialPort.Write(commandData, 0, commandData.Length);
+            var buffer = new byte[length];
+
+            // What for a while, the sensor need some time to respond.
+            Thread.Sleep(50);
+
+            _serialPort.Read(buffer, 0, length);
+            return buffer;
+        }
+
+        public void Dispose()
+        {
+            _serialPort?.Dispose();
         }
     }
 }

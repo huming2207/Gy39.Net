@@ -3,7 +3,7 @@ using Gy39Sensor.Core.Model;
 
 namespace Gy39Sensor.Core
 {
-    public class SensorDataReader
+    public static class SensorDataReader
     {
         public static Weather GetWeatherFromData(byte[] data)
         {   
