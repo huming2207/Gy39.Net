@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2016
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gy39Sensor.Core", "Gy39Sensor.Core\Gy39Sensor.Core.csproj", "{DB879D6F-325C-41AC-B052-925F43D92005}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gy39Sensor.Core", "Gy39Sensor.Core\Gy39Sensor.Core.csproj", "{DB879D6F-325C-41AC-B052-925F43D92005}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gy39Sensor.Demo", "Gy39Core.Demo\Gy39Sensor.Demo.csproj", "{B804A5F5-5645-4B52-AA0C-C34A5552A4A5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{DB879D6F-325C-41AC-B052-925F43D92005}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DB879D6F-325C-41AC-B052-925F43D92005}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DB879D6F-325C-41AC-B052-925F43D92005}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B804A5F5-5645-4B52-AA0C-C34A5552A4A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B804A5F5-5645-4B52-AA0C-C34A5552A4A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B804A5F5-5645-4B52-AA0C-C34A5552A4A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B804A5F5-5645-4B52-AA0C-C34A5552A4A5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
