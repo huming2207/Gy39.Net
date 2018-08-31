@@ -52,8 +52,19 @@ namespace Gy39Sensor.Demo.View
 
         private void OpenPortButton_Click(object sender, RoutedEventArgs e)
         {
-            _gy39 = new Gy39(PortComboBox.SelectedValue.ToString());
+            try
+            {
+                _gy39 = new Gy39(PortComboBox.SelectedValue.ToString());         
+            } 
+            catch(Exception exception)
+            {
+                MessageBox.Show("Failed to open the port, reason: " + exception.Message);
+            }
+
+            OpenPortButton.IsEnabled = false;
+            ClosePortButton.IsEnabled = true;
             _timer.Start();
+            MessageBox.Show("Port opened.");
         }
 
         private void OnTimerTick(object sender, EventArgs e)
@@ -71,7 +82,11 @@ namespace Gy39Sensor.Demo.View
 
         private void ClosePortButton_Click(object sender, RoutedEventArgs e)
         {
-            _gy39.Stop();
+            _gy39.Dispose();
+            _timer.Stop();
+
+            OpenPortButton.IsEnabled = true;
+            ClosePortButton.IsEnabled = false;
         }
     }
 }

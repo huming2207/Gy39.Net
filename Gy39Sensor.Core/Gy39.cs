@@ -38,12 +38,6 @@ namespace Gy39Sensor.Core
             _serialPort.Write(new byte[] { 0xA5, 0x00, 0xA5 }, 0, 3);
         }
 
-
-        public void Stop()
-        {
-            _serialPort.Close();
-        }
-
         public Weather QueryWeather()
         {
             var buffer = PerformQuery(new byte[] {0xA5, 0x52, 0xF7}, 15);
@@ -71,6 +65,7 @@ namespace Gy39Sensor.Core
 
         public void Dispose()
         {
+            _serialPort.Close();
             _serialPort?.Dispose();
         }
     }

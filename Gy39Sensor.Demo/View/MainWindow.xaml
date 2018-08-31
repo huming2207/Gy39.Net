@@ -12,7 +12,7 @@
                 <ComboBox x:Name="PortComboBox" HorizontalAlignment="Left" Margin="82,10,0,0" VerticalAlignment="Top" Width="120" Height="26"/>
                 <Label Content="Serial port:" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
                 <Button x:Name="OpenPortButton" Content="Open" HorizontalAlignment="Left" Margin="224,10,0,0" VerticalAlignment="Top" Width="109" Height="26" Click="OpenPortButton_Click"/>
-                <Button x:Name="ClosePortButton" Content="Close" HorizontalAlignment="Left" Margin="338,10,0,0" VerticalAlignment="Top" Width="109" Height="26" Click="ClosePortButton_Click"/>
+                <Button x:Name="ClosePortButton" Content="Close" HorizontalAlignment="Left" Margin="338,10,0,0" VerticalAlignment="Top" Width="109" Height="26" Click="ClosePortButton_Click" IsEnabled="False"/>
             </Grid>
         </GroupBox>
         <GroupBox Header="Sensor data received" Margin="10,86,0,10" HorizontalAlignment="Left" Width="472">
